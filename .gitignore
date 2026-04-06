@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Downloads
+downloads/
+EXP-LINK_Videos/
+*.mp4
+*.mkv
+*.webm
+*.jpg
+*.png
+temp_*
+frag_*
+tmp_*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.err
+
+# Config
+config.local.json
+*.cookies
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution
+build/
+dist/
+*.egg-info/
