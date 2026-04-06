@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gloom-ox"
+version = "4.0.0"
+description = "Enterprise Grade Universal Media Extractor"
+readme = "docs/README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "xspeen", email = "xspeen@proton.me"}]
+
+[project.urls]
+Homepage = "https://github.com/xspeen/GLOOM-OX"
+Repository = "https://github.com/xspeen/GLOOM-OX.git"
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I"]
