@@ -1,72 +1,155 @@
 #!/usr/bin/env python3
 """
-GLOOM-OX v4.0 - ENTERPRISE GRADE UNIVERSUAL MEDIA EXTRACTOR
-Author: xspeen | Certified Ethical Pentester (CEH)
-Launch: 2026
-License: MIT
-Repository: https://github.com/xspeen/GLOOM-OX.git
-
-Description: Enterprise-grade media extraction tool with NO LIMITS.
-Supports YouTube, Instagram, Pinterest, TikTok, and 50+ platforms.
-Includes live robot assistant for platform bypass and automatic detection.
+GLOOM-OX v4.0 - ENTERPRISE GRADE UNIVERSAL MEDIA EXTRACTOR
+STANDALONE VERSION - NO PACKAGE REQUIRED
+Author: xspeen | CEH Certified 2026
 """
 
 import os
 import sys
+import time
+import re
+import random
 import subprocess
-import platform
+from pathlib import Path
 
-# Ensure we're in the right directory
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, SCRIPT_DIR)
+# Global settings
+VERSION = "4.0.0"
+AUTHOR = "xspeen"
+HOME = str(Path.home())
+SYSTEM = platform.system().lower()
+IS_TERMUX = 'com.termux' in HOME or 'termux' in sys.executable
 
-def launch_new_terminal_session():
-    """Launch GLOOM-OX in a new terminal session with the tool name"""
-    system = platform.system().lower()
-    
-    if 'termux' in sys.executable or 'com.termux' in os.environ.get('PREFIX', ''):
-        # Termux - just clear and run in current session
-        os.system('clear')
-        return False
-    elif system == 'windows':
-        # Windows: Open new PowerShell window
-        script_path = os.path.abspath(__file__)
-        subprocess.Popen(['start', 'powershell', '-NoExit', '-Command', 
-                         f'Write-Host "GLOOM-OX" -ForegroundColor Blue; python "{script_path}" --no-new-term'],
-                         shell=True)
+# Paths
+if IS_TERMUX:
+    TERMUX_STORAGE = "/data/data/com.termux/files/home/storage/shared"
+    if not os.path.exists(TERMUX_STORAGE):
+        TERMUX_STORAGE = HOME + "/storage/shared"
+    DOWNLOAD_DIR = os.path.join(TERMUX_STORAGE, "DCIM", "GLOOM-OX_Videos")
+else:
+    DOWNLOAD_DIR = os.path.join(HOME, "Downloads", "GLOOM-OX_Videos")
+
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+
+# Banner
+BANNER = """
+\033[1;34m
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║     ██████╗  ██╗      ██████╗  ██████╗ ███╗   ███╗     ██████╗ ██╗  ██╗      ║
+║    ██╔════╝ ██║     ██╔═══██╗██╔═══██╗████╗ ████║    ██╔═══██╗██║  ██║      ║
+║    ██║  ███╗██║     ██║   ██║██║   ██║██╔████╔██║    ██║   ██║███████║      ║
+║    ██║   ██║██║     ██║   ██║██║   ██║██║╚██╔╝██║    ██║   ██║██╔══██║      ║
+║    ╚██████╔╝███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║    ╚██████╔╝██║  ██║      ║
+║     ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝     ╚═════╝ ╚═╝  ╚═╝      ║
+║                                                                               ║
+║        [ ENTERPRISE GRADE v4.0.0 - CERTIFIED ETHICAL PENTESTER ]              ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+\033[0m
+"""
+
+def check_dependencies():
+    """Check and install yt-dlp"""
+    try:
+        import yt_dlp
+        print("\033[1;32m[✓] yt-dlp found\033[0m")
         return True
-    elif system == 'linux' or system == 'darwin':
-        # Linux/Mac: Open new terminal
-        script_path = os.path.abspath(__file__)
-        terminals = ['gnome-terminal', 'xterm', 'konsole', 'terminal', 'xfce4-terminal']
+    except ImportError:
+        print("\033[1;33m[~] Installing yt-dlp...\033[0m")
+        subprocess.run([sys.executable, "-m", "pip", "install", "yt-dlp", "--upgrade"])
+        return True
+
+def download_media(url):
+    """Download media using yt-dlp"""
+    try:
+        import yt_dlp
         
-        for term in terminals:
-            try:
-                subprocess.Popen([term, '--title', 'GLOOM-OX', '--', 'python3', script_path, '--no-new-term'],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return True
-            except FileNotFoundError:
-                continue
-    
-    return False
+        timestamp = int(time.time())
+        output_template = os.path.join(DOWNLOAD_DIR, f"GLOOMOX_%(title)s_{timestamp}.%(ext)s")
+        
+        ydl_opts = {
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'outtmpl': output_template,
+            'quiet': False,
+            'no_warnings': False,
+            'ignoreerrors': True,
+            'retries': 10,
+            'fragment_retries': 10,
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        }
+        
+        print(f"\033[1;33m[+] Downloading: {url}\033[0m")
+        
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            
+            # Fix extension
+            if not os.path.exists(filename):
+                for ext in ['.mp4', '.mkv', '.webm']:
+                    test_file = filename.rsplit('.', 1)[0] + ext
+                    if os.path.exists(test_file):
+                        filename = test_file
+                        break
+            
+            if os.path.exists(filename):
+                print(f"\033[1;32m[✓] Downloaded: {os.path.basename(filename)}\033[0m")
+                print(f"\033[1;32m[✓] Saved to: {DOWNLOAD_DIR}\033[0m")
+                return filename
+        
+        return None
+        
+    except Exception as e:
+        print(f"\033[1;31m[!] Error: {e}\033[0m")
+        return None
 
 def main():
-    # Check if we should launch a new terminal
-    if '--no-new-term' not in sys.argv and len(sys.argv) <= 2:
-        launched = launch_new_terminal_session()
-        if launched:
-            print("[+] Launching GLOOM-OX in new terminal session...")
-            sys.exit(0)
+    """Main function"""
+    os.system('clear' if SYSTEM != 'windows' else 'cls')
+    print(BANNER)
+    print(f"\033[1;33m[+] Author: {AUTHOR} | CEH Certified 2026\033[0m")
+    print(f"\033[1;33m[+] Platform: {SYSTEM.upper()} | Termux: {IS_TERMUX}\033[0m")
+    print(f"\033[1;36m[+] Download Directory: {DOWNLOAD_DIR}\033[0m")
+    print("\033[1;32m" + "="*70 + "\033[0m")
     
-    # Import and run the main application
-    try:
-        from gloom_ox.__main__ import run
-        sys.exit(run())
-    except ImportError as e:
-        print(f"[!] Import error: {e}")
-        print("[!] Make sure you're in the GLOOM-OX directory")
-        print("[!] Run: pip install -r requirements.txt")
-        sys.exit(1)
+    # Check dependencies
+    check_dependencies()
+    
+    # Main loop
+    while True:
+        print("\n\033[1;35m" + "═"*70 + "\033[0m")
+        print("\033[1;33m[+] Enter URL (or 'exit' to quit):\033[0m")
+        
+        try:
+            url = input("\033[1;32m[GLOOM-OX] >> \033[0m").strip()
+        except KeyboardInterrupt:
+            print("\n\033[1;31m[!] Exiting...\033[0m")
+            break
+        
+        if url.lower() in ['exit', 'quit', 'q']:
+            break
+        elif url.lower() == 'clear':
+            os.system('clear' if SYSTEM != 'windows' else 'cls')
+            print(BANNER)
+            continue
+        elif not url:
+            continue
+        
+        # Add https if missing
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        
+        # Download
+        start = time.time()
+        result = download_media(url)
+        elapsed = time.time() - start
+        
+        if result:
+            print(f"\033[1;32m[✓] Complete in {elapsed:.1f}s\033[0m")
+        else:
+            print("\033[1;31m[!] Download failed. Check URL and try again.\033[0m")
 
 if __name__ == "__main__":
+    import platform
     main()
