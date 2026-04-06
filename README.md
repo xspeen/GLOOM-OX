@@ -151,20 +151,23 @@ Don't have Termux?
 # Step 1: Update packages
 pkg update && pkg upgrade -y
 
-# Step 2: Install dependencies
+# Step 2: Update packages
+pkg install nodejs -y
+
+# Step 3: Install dependencies
 pkg install python ffmpeg git -y
 
-# Step 3: Clone repository
+# Step 4: Clone repository
 git clone https://github.com/xspeen/GLOOM-OX.git
 cd GLOOM-OX
 
-# Step 4: Install Python packages
+# Step 5: Install Python packages
 pip install -r requirements.txt
 
-# Step 5: Grant storage permission (for gallery save)
+# Step 6: Grant storage permission (for gallery save)
 termux-setup-storage
 
-# Step 6: Launch GLOOM-OX
+# Step 7: Launch GLOOM-OX
 python gloom-ox.py
 ```
 
@@ -181,6 +184,8 @@ sudo apt update && sudo apt install python3 python3-pip ffmpeg git -y
 # For Arch Linux:
 sudo pacman -S python python-pip ffmpeg git
 
+# For Linux:
+sudo apt install nodejs -y
 # Step 2: Clone repository
 git clone https://github.com/xspeen/GLOOM-OX.git
 cd GLOOM-OX
