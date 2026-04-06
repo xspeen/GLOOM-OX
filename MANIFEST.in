@@ -1,0 +1,19 @@
+# Include documentation
+include docs/*.md
+include LICENSE
+include requirements.txt
+include setup.cfg
+include pyproject.toml
+
+# Include assets
+include assets/*.png
+include assets/*.txt
+
+# Include scripts
+include scripts/*.sh
+include scripts/*.ps1
+
+# Exclude tests from distribution
+prune tests
+prune .github
+prune __pycache__
