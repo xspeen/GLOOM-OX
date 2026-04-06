@@ -20,7 +20,7 @@ pip install -r requirements.txt
 python gloom-ox.py
 ```
 
-Linux (Ubuntu/Debian)
+### Linux (Ubuntu/Debian)
 
 ```bash
 # Install Python and FFmpeg
@@ -36,7 +36,7 @@ pip3 install -r requirements.txt
 python3 gloom-ox.py
 ```
 
-Windows
+### Windows
 
 ```bash
 # Install Python from python.org (3.8+)
@@ -51,7 +51,7 @@ pip install -r requirements.txt
 python gloom-ox.py
 ```
 
-Post-Installation
+### Post-Installation
 
 Verify installation:
 
@@ -65,7 +65,7 @@ Update tool:
 python gloom-ox.py --update
 ```
 
-Troubleshooting
+### Troubleshooting
 
 "yt-dlp not found"
 
@@ -79,7 +79,7 @@ pip install --upgrade yt-dlp
 · Termux: pkg install ffmpeg
 · Windows: Download from ffmpeg.org
 
-Permission denied (Linux/Mac)
+### Permission denied (Linux/Mac)
 
 ```bash
 chmod +x gloom-ox.py
