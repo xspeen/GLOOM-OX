@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://iili.io/B5HQVBn.jpg" alt="GLOOM-OX" width="280">
+  <img src="https://iili.io/B5HQVBn.jpg" alt="GLOOM-OX" width="900">
 </p>
 
 <p align="center">
