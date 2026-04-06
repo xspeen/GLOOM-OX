@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
 GLOOM-OX v4.0 - ENTERPRISE GRADE UNIVERSAL MEDIA EXTRACTOR
-STANDALONE VERSION - NO PACKAGE REQUIRED
+STANDALONE VERSION - FULLY WORKING
 Author: xspeen | CEH Certified 2026
 """
 
 import os
 import sys
+import platform    # ← IMPORT FIXED
 import time
 import re
 import random
@@ -96,6 +97,15 @@ def download_media(url):
             if os.path.exists(filename):
                 print(f"\033[1;32m[✓] Downloaded: {os.path.basename(filename)}\033[0m")
                 print(f"\033[1;32m[✓] Saved to: {DOWNLOAD_DIR}\033[0m")
+                
+                # Termux gallery notification
+                if IS_TERMUX:
+                    try:
+                        subprocess.run(["termux-media-scan", filename], capture_output=True)
+                        print("\033[1;32m[✓] Saved to Gallery (Termux)\033[0m")
+                    except:
+                        pass
+                
                 return filename
         
         return None
@@ -109,7 +119,8 @@ def main():
     os.system('clear' if SYSTEM != 'windows' else 'cls')
     print(BANNER)
     print(f"\033[1;33m[+] Author: {AUTHOR} | CEH Certified 2026\033[0m")
-    print(f"\033[1;33m[+] Platform: {SYSTEM.upper()} | Termux: {IS_TERMUX}\033[0m")
+    print(f"\033[1;33m[+] Repository: https://github.com/xspeen/GLOOM-OX\033[0m")
+    print(f"\033[1;36m[+] Platform: {SYSTEM.upper()} | Termux: {'YES' if IS_TERMUX else 'NO'}\033[0m")
     print(f"\033[1;36m[+] Download Directory: {DOWNLOAD_DIR}\033[0m")
     print("\033[1;32m" + "="*70 + "\033[0m")
     
@@ -119,7 +130,8 @@ def main():
     # Main loop
     while True:
         print("\n\033[1;35m" + "═"*70 + "\033[0m")
-        print("\033[1;33m[+] Enter URL (or 'exit' to quit):\033[0m")
+        print("\033[1;33m[+] Enter URL (commands: clear, exit):\033[0m")
+        print("\033[1;31m[!] Supports: YouTube, Instagram, Pinterest, TikTok\033[0m")
         
         try:
             url = input("\033[1;32m[GLOOM-OX] >> \033[0m").strip()
@@ -128,6 +140,7 @@ def main():
             break
         
         if url.lower() in ['exit', 'quit', 'q']:
+            print("\033[1;32m[+] Thanks for using GLOOM-OX!\033[0m")
             break
         elif url.lower() == 'clear':
             os.system('clear' if SYSTEM != 'windows' else 'cls')
@@ -141,15 +154,15 @@ def main():
             url = 'https://' + url
         
         # Download
+        print("\n")
         start = time.time()
         result = download_media(url)
         elapsed = time.time() - start
         
         if result:
-            print(f"\033[1;32m[✓] Complete in {elapsed:.1f}s\033[0m")
+            print(f"\n\033[1;32m[✓] Download complete in {elapsed:.1f} seconds\033[0m")
         else:
-            print("\033[1;31m[!] Download failed. Check URL and try again.\033[0m")
+            print("\n\033[1;31m[!] Download failed. Check URL and try again.\033[0m")
 
 if __name__ == "__main__":
-    import platform
     main()
