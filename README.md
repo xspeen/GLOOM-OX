@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://iili.io/B5HQVBn.jpg" alt="GLOOM-OX" width="900">
+  <img src="https://github.com/xspeen/GLOOM-OX/blob/1e698410cab6d062664f12834ca758618f84b514/meta_shot_gloom.jpg" alt="GLOOM-OX" width="900">
 </p>
 
 <p align="center">
