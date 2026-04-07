@@ -9,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Test GLOOM-OX
+    name: Test GLOOM-OX Enterprise
     runs-on: ubuntu-latest
     
     steps:
@@ -20,53 +20,34 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-    
+        cache: 'pip' # Speeds up future runs by caching dependencies
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install yt-dlp pytest black ruff
-    
-    - name: Check Python syntax
-      run: |
-        python -m py_compile gloom-ox.py
-        echo "✅ Syntax check passed"
-    
-    - name: Check file exists
-      run: |
-        if [ -f "gloom-ox.py" ]; then
-          echo "✅ gloom-ox.py found"
-          wc -l gloom-ox.py
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
         else
-          echo "❌ gloom-ox.py not found"
+          echo "❌ requirements.txt not found!"
           exit 1
         fi
     
-    - name: Lint with ruff (fast)
+    - name: Check Python syntax
       run: |
-        ruff check gloom-ox.py --ignore E501 || true
+        # This will now pass because all 'requests', 'colorama', etc., are installed
+        python -m py_compile gloom-ox.py
+        echo "✅ Syntax check passed"
     
-    - name: Test import (no execution)
+    - name: Verify Core Modules
       run: |
-        python -c "
-        import sys
-        import os
-        sys.path.insert(0, '.')
-        with open('gloom-ox.py', 'r') as f:
-            content = f.read()
-            if 'def main' in content:
-                print('✅ Main function found')
-            if 'AIBypassEngine' in content:
-                print('✅ AI Bypass Engine found')
-            if 'download_with_bypass' in content:
-                print('✅ Bypass download function found')
-        "
-    
-    - name: Verify version
+        python -c "import requests; import colorama; import Cryptodome; print('✅ Enterprise dependencies verified')"
+
+    - name: Lint with ruff
       run: |
-        grep -E "VERSION.*=.*\"[0-9]" gloom-ox.py | head -1 || echo "Version check skipped"
+        ruff check gloom-ox.py --ignore E501
     
     - name: Final status
       run: |
         echo "═══════════════════════════════════════════════════════"
-        echo "✅ GLOOM-OX CI completed successfully!"
+        echo "🚀 GLOOM-OX Enterprise CI completed successfully!"
         echo "═══════════════════════════════════════════════════════"
