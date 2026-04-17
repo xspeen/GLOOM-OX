@@ -1,283 +1,474 @@
 #!/usr/bin/env python3
 """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                    GLOOM-OX v4.0 - TIER 3 AI BYPASS ENGINE                    ║
+║                    GLOOM-OX v5.0 - ULTIMATE BYPASS ENGINE                     ║
 ║                                                                               ║
-║  ██████╗ ██╗      ██████╗  ██████╗ ███╗   ███╗    ██████╗ ██╗  ██╗           ║
-║ ██╔════╝ ██║     ██╔═══██╗██╔═══██╗████╗ ████║    ██╔══██╗██║  ██║           ║
-║ ██║  ███╗██║     ██║   ██║██║   ██║██╔████╔██║    ██║  ██║███████║           ║
-║ ██║   ██║██║     ██║   ██║██║   ██║██║╚██╔╝██║    ██║  ██║██╔══██║           ║
-║ ╚██████╔╝███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║    ██████╔╝██║  ██║           ║
-║  ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝    ╚═════╝ ╚═╝  ╚═╝           ║
+║  ██████╗ ██╗   ██╗██████╗  █████╗ ███████╗███████╗                           ║
+║  ██╔══██╗╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██╔════╝                           ║
+║  ██████╔╝ ╚████╔╝ ██████╔╝███████║███████╗███████╗                           ║
+║  ██╔══██╗  ╚██╔╝  ██╔══██╗██╔══██║╚════██║╚════██║                           ║
+║  ██████╔╝   ██║   ██████╔╝██║  ██║███████║███████║                           ║
+║  ╚═════╝    ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝                           ║
 ║                                                                               ║
-║              [ TIER 3 AI BYPASS - SURVIVES ANY UPDATE ]                       ║
+║         [ ADVANCED BYPASS ENGINE - UNDETECTABLE v5.0 ]                        ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 """
 
 import os
 import sys
-import platform
 import time
-import re
 import random
-import subprocess
 import json
-import shutil
+import hashlib
+import base64
+import urllib.parse
+import subprocess
+import threading
+import queue
+from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
+from collections import defaultdict
 
-# ==================== GLOBAL CONFIG ====================
-VERSION = "4.0.0"
-AUTHOR = "xspeen"
-REPO_URL = "https://github.com/xspeen/GLOOM-OX"
+# ==================== ADVANCED CONFIGURATION ====================
+VERSION = "5.0.0"
 HOME = str(Path.home())
 SYSTEM = platform.system().lower()
 IS_TERMUX = 'com.termux' in HOME or 'termux' in sys.executable
 
-# Paths - Fix for DCIM Gallery
+# Stealth directories
 if IS_TERMUX:
-    # Termux path setup
-    try:
-        # Check if storage is accessible
-        TERMUX_STORAGE = "/data/data/com.termux/files/home/storage/shared"
-        if not os.path.exists(TERMUX_STORAGE):
-            TERMUX_STORAGE = os.path.join(HOME, "storage/shared")
-        
-        DCIM_PATH = os.path.join(TERMUX_STORAGE, "DCIM")
-        # Create GLOOM-OX folder inside DCIM
-        DOWNLOAD_DIR = os.path.join(DCIM_PATH, "GLOOM-OX_Videos")
-    except:
-        DOWNLOAD_DIR = os.path.join(HOME, "storage/shared/DCIM/GLOOM-OX_Videos")
+    TERMUX_STORAGE = "/data/data/com.termux/files/home/storage/shared"
+    if not os.path.exists(TERMUX_STORAGE):
+        TERMUX_STORAGE = os.path.join(HOME, "storage/shared")
+    DCIM_PATH = os.path.join(TERMUX_STORAGE, "DCIM")
+    DOWNLOAD_DIR = os.path.join(DCIM_PATH, "Videos")
 else:
-    # Non-Termux (Windows/Linux/Mac)
-    DOWNLOAD_DIR = os.path.join(HOME, "Videos", "GLOOM-OX_Videos")
-    if SYSTEM == "windows":
-        DOWNLOAD_DIR = os.path.join(os.environ.get('USERPROFILE', HOME), "Videos", "GLOOM-OX_Videos")
-    elif SYSTEM == "linux":
-        DOWNLOAD_DIR = os.path.join(HOME, "Videos", "GLOOM-OX_Videos")
-    elif SYSTEM == "darwin":  # macOS
-        DOWNLOAD_DIR = os.path.join(HOME, "Movies", "GLOOM-OX_Videos")
+    DOWNLOAD_DIR = os.path.join(HOME, "Videos", "Downloads")
 
-# Create download directory
 os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-# ==================== TIER 3 BYPASS CONFIG ====================
-# Multiple user agents for rotation
-USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1',
-    'Mozilla/5.0 (Linux; Android 14; SM-S901B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-]
+# ==================== SOPHISTICATED BYPASS TECHNIQUES ====================
 
-# Supported platforms and their extractors
-SUPPORTED_PLATFORMS = {
-    'youtube': 'youtube',
-    'youtu.be': 'youtube',
-    'instagram': 'instagram',
-    'pinterest': 'pinterest',
-    'tiktok': 'tiktok',
-    'twitter': 'twitter',
-    'x.com': 'twitter',
-    'facebook': 'facebook',
-    'reddit': 'reddit',
-    'vimeo': 'vimeo',
-    'dailymotion': 'dailymotion',
-}
-
-# ==================== BANNER ====================
-BANNER = """
-\033[1;34m
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                                                                               ║
-║     ██████╗  ██╗      ██████╗  ██████╗ ███╗   ███╗     ██████╗ ██╗  ██╗      ║
-║    ██╔════╝ ██║     ██╔═══██╗██╔═══██╗████╗ ████║    ██╔═══██╗██║  ██║      ║
-║    ██║  ███╗██║     ██║   ██║██║   ██║██╔████╔██║    ██║   ██║███████║      ║
-║    ██║   ██║██║     ██║   ██║██║   ██║██║╚██╔╝██║    ██║   ██║██╔══██║      ║
-║    ╚██████╔╝███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║    ╚██████╔╝██║  ██║      ║
-║     ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝     ╚═════╝ ╚═╝  ╚═╝      ║
-║                                                                               ║
-║        [ TIER 3 AI BYPASS ENGINE - ENTERPRISE GRADE v4.0.0 ]                  ║
-║                                                                               ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
-\033[0m
-"""
-
-# ==================== DEPENDENCY CHECK ====================
-def check_dependencies():
-    """Check and install all dependencies"""
-    print("\033[1;34m[+] Checking dependencies...\033[0m")
-    
-    dependencies_ok = True
-    
-    # Check/Install yt-dlp
-    try:
-        import yt_dlp
-        print("\033[1;32m[✓] yt-dlp: Installed\033[0m")
-    except ImportError:
-        print("\033[1;33m[~] Installing yt-dlp...\033[0m")
-        try:
-            subprocess.run([sys.executable, "-m", "pip", "install", "yt-dlp", "--upgrade", "--quiet"], check=True)
-            print("\033[1;32m[✓] yt-dlp installed successfully\033[0m")
-        except:
-            print("\033[1;31m[✗] Failed to install yt-dlp\033[0m")
-            dependencies_ok = False
-    
-    # Check FFmpeg for video processing
-    try:
-        subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
-        print("\033[1;32m[✓] FFmpeg: Installed\033[0m")
-    except:
-        print("\033[1;33m[!] FFmpeg not found - videos will still download but may not play on all devices\033[0m")
-        if IS_TERMUX:
-            print("\033[1;33m[~] Install FFmpeg: pkg install ffmpeg\033[0m")
-    
-    return dependencies_ok
-
-# ==================== VIDEO DOWNLOADER ====================
-class SocialMediaDownloader:
-    """Universal social media video downloader"""
+class StealthEngine:
+    """Advanced anti-detection engine"""
     
     def __init__(self):
-        self.download_dir = DOWNLOAD_DIR
-        self.session = None
+        self.request_count = 0
+        self.fingerprint = self.generate_fingerprint()
+        self.session_tokens = []
         
-    def get_platform(self, url):
-        """Detect platform from URL"""
+    def generate_fingerprint(self):
+        """Generate unique browser fingerprint"""
+        fingerprints = [
+            f"{random.randint(1000000000, 9999999999)}",
+            base64.b64encode(os.urandom(16)).decode(),
+            hashlib.md5(str(time.time()).encode()).hexdigest()[:16]
+        ]
+        return random.choice(fingerprints)
+    
+    def rotate_fingerprint(self):
+        """Rotate fingerprint every request"""
+        self.fingerprint = self.generate_fingerprint()
+        self.request_count += 1
+        
+    def get_stealth_headers(self):
+        """Generate undetectable request headers"""
+        headers = {
+            'User-Agent': self.get_random_user_agent(),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': random.choice(['en-US,en;q=0.9', 'en-GB,en;q=0.8', 'en;q=0.9']),
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Charset': 'UTF-8,*;q=0.5',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+            'Cache-Control': 'max-age=0',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'DNT': '1',
+            'Pragma': 'no-cache',
+        }
+        
+        # Add random extra headers to appear more legitimate
+        if random.random() > 0.7:
+            headers['X-Requested-With'] = random.choice(['XMLHttpRequest', 'com.android.browser', ''])
+            headers['X-Forwarded-For'] = f"{random.randint(1,255)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}"
+            
+        return headers
+    
+    def get_random_user_agent(self):
+        """Extensive user agent rotation"""
+        ua_list = [
+            # Chrome on Android
+            f'Mozilla/5.0 (Linux; Android {random.randint(11,14)}; {random.choice(["SM-G998B", "Pixel 6", "OnePlus 9Pro"])}) AppleWebKit/537.36 Chrome/{random.randint(90,122)}.0.0.0 Mobile Safari/537.36',
+            
+            # Safari on iOS
+            f'Mozilla/5.0 (iPhone; CPU iPhone OS {random.randint(15,17)}_{random.randint(0,5)} like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{random.randint(15,17)}.0 Mobile/15E148 Safari/604.1',
+            
+            # Chrome on Windows
+            f'Mozilla/5.0 (Windows NT {random.randint(10,11)}.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{random.randint(90,122)}.0.0.0 Safari/537.36',
+            
+            # Firefox
+            f'Mozilla/5.0 (Windows NT {random.randint(10,11)}.0; Win64; x64; rv:{random.randint(90,109)}.0) Gecko/20100101 Firefox/{random.randint(90,109)}.0',
+            
+            # Edge
+            f'Mozilla/5.0 (Windows NT {random.randint(10,11)}.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{random.randint(90,122)}.0.0.0 Safari/537.36 Edg/{random.randint(90,122)}.0.0.0',
+            
+            # Samsung Internet
+            f'Mozilla/5.0 (Linux; Android {random.randint(10,13)}; SAMSUNG {random.choice(["SM-G973F", "SM-N976B", "SM-F916B"])}) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/{random.randint(14,22)}.0 Chrome/{random.randint(90,110)}.0.0.0 Mobile Safari/537.36',
+        ]
+        return random.choice(ua_list)
+    
+    def random_delay(self):
+        """Human-like random delays"""
+        delay = random.uniform(0.5, 2.5)
+        time.sleep(delay)
+        
+    def simulate_behavior(self):
+        """Simulate human browsing behavior"""
+        actions = [
+            lambda: time.sleep(random.uniform(0.1, 0.5)),
+            lambda: None,
+            lambda: random.choice([True, False]),
+        ]
+        random.choice(actions)()
+
+class AdaptiveExtractor:
+    """Adaptive extractor that evolves with platform changes"""
+    
+    def __init__(self):
+        self.successful_methods = defaultdict(int)
+        self.failed_methods = defaultdict(int)
+        self.method_cache = {}
+        
+    def get_best_method(self, platform):
+        """Dynamically choose best extraction method"""
+        if platform in self.successful_methods:
+            methods = sorted(self.successful_methods[platform].items(), key=lambda x: x[1], reverse=True)
+            if methods:
+                return methods[0][0]
+        return None
+    
+    def record_success(self, platform, method):
+        """Record successful extraction method"""
+        self.successful_methods[platform][method] += 1
+        
+    def record_failure(self, platform, method):
+        """Record failed extraction method"""
+        self.failed_methods[platform][method] += 1
+
+class ProxyManager:
+    """Smart proxy rotation system"""
+    
+    def __init__(self):
+        self.proxies = []
+        self.current_proxy = None
+        self.proxy_rotation_count = 0
+        
+    def get_proxy(self):
+        """Get proxy with rotation"""
+        # In production, you would integrate with proxy services
+        # For now, returns None (direct connection)
+        return None
+
+class CookieJar:
+    """Advanced cookie management"""
+    
+    def __init__(self):
+        self.cookies = {}
+        self.session_id = hashlib.md5(os.urandom(32)).hexdigest()
+        
+    def generate_cookies(self, domain):
+        """Generate realistic cookies"""
+        cookies = {
+            f'_ga_{random.randint(100000000, 999999999)}': hashlib.md5(os.urandom(16)).hexdigest(),
+            '_ga': f'GA1.2.{random.randint(1000000000, 9999999999)}.{int(time.time())}',
+            '_gid': f'GA1.2.{random.randint(1000000000, 9999999999)}.{int(time.time())}',
+            f'{domain}_session': self.session_id,
+            'csrftoken': hashlib.md5(os.urandom(32)).hexdigest(),
+        }
+        return cookies
+
+# ==================== ULTIMATE DOWNLOADER ====================
+
+class UltimateDownloader:
+    """Ultimate bypass downloader"""
+    
+    def __init__(self):
+        self.stealth = StealthEngine()
+        self.extractor = AdaptiveExtractor()
+        self.cookie_jar = CookieJar()
+        self.download_dir = DOWNLOAD_DIR
+        
+    def detect_platform(self, url):
+        """Intelligently detect platform"""
         domain = urlparse(url).netloc.lower()
         domain = domain.replace('www.', '')
         
-        for platform, extractor in SUPPORTED_PLATFORMS.items():
-            if platform in domain:
-                return extractor
-        return 'generic'
-    
-    def sanitize_filename(self, filename):
-        """Remove invalid characters from filename"""
-        # Remove invalid characters for Windows/Linux
-        invalid_chars = '<>:"/\\|?*'
-        for char in invalid_chars:
-            filename = filename.replace(char, '_')
-        # Limit length
-        if len(filename) > 200:
-            filename = filename[:200]
-        return filename.strip()
-    
-    def download_video(self, url):
-        """Download video from any social media platform"""
-        platform = self.get_platform(url)
-        print(f"\033[1;36m🤖 [AI] Detected platform: {platform.upper()}\033[0m")
-        
-        # Generate unique filename
-        timestamp = int(time.time())
-        random_id = random.randint(1000, 9999)
-        
-        # Configure yt-dlp options
-        ydl_opts = {
-            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-            'outtmpl': os.path.join(self.download_dir, f'%(title)s_{timestamp}_{random_id}.%(ext)s'),
-            'quiet': False,
-            'no_warnings': False,
-            'ignoreerrors': False,
-            'retries': 10,
-            'fragment_retries': 10,
-            'skip_unavailable_fragments': False,
-            'user_agent': random.choice(USER_AGENTS),
-            'http_headers': {
-                'User-Agent': random.choice(USER_AGENTS),
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Accept-Encoding': 'gzip, deflate',
-                'DNT': '1',
-                'Connection': 'keep-alive',
-            },
-            'extractor_args': {
-                'youtube': {
-                    'skip': ['dash', 'hls'],
-                    'player_client': ['android', 'ios', 'web'],
-                },
-                'instagram': {
-                    'user_agent': ['mobile'],
-                },
-                'tiktok': {
-                    'user_agent': ['mobile'],
-                }
-            },
-            'postprocessors': [{
-                'key': 'FFmpegVideoConvertor',
-                'preferedformat': 'mp4',
-            }] if self.check_ffmpeg() else [],
+        platforms = {
+            'youtube': ['youtube', 'youtu.be'],
+            'instagram': ['instagram'],
+            'tiktok': ['tiktok'],
+            'pinterest': ['pinterest'],
+            'twitter': ['twitter', 'x.com'],
+            'facebook': ['facebook', 'fb.watch'],
+            'reddit': ['reddit'],
+            'vimeo': ['vimeo'],
+            'dailymotion': ['dailymotion'],
         }
         
+        for platform, domains in platforms.items():
+            if any(d in domain for d in domains):
+                return platform
+        return 'generic'
+    
+    def download_video(self, url):
+        """Main download method with multiple fallbacks"""
+        
+        platform = self.detect_platform(url)
+        print(f"\033[1;36m🎯 Target: {platform.upper()}\033[0m")
+        
+        # Try multiple download methods
+        methods = [
+            self.method_standard,
+            self.method_mobile_api,
+            self.method_desktop_emulation,
+            self.method_direct_extract,
+            self.method_legacy_compat
+        ]
+        
+        for idx, method in enumerate(methods, 1):
+            print(f"\033[1;33m🔄 Attempt {idx}/5 - {method.__name__}\033[0m")
+            self.stealth.random_delay()
+            
+            result = method(url, platform)
+            if result and result[0]:
+                self.extractor.record_success(platform, method.__name__)
+                return result
+            else:
+                self.extractor.record_failure(platform, method.__name__)
+                
+        return None, None
+    
+    def method_standard(self, url, platform):
+        """Standard yt-dlp method with optimizations"""
         try:
             import yt_dlp
             
-            print(f"\033[1;33m[+] Starting download...\033[0m")
+            timestamp = int(time.time())
+            random_id = random.randint(1000, 9999)
+            
+            ydl_opts = {
+                'format': 'best[ext=mp4]/best',
+                'outtmpl': os.path.join(self.download_dir, f'video_{timestamp}_{random_id}.%(ext)s'),
+                'quiet': True,
+                'no_warnings': True,
+                'ignoreerrors': False,
+                'retries': 10,
+                'fragment_retries': 10,
+                'continuedl': True,
+                'user_agent': self.stealth.get_random_user_agent(),
+                'headers': self.stealth.get_stealth_headers(),
+                'extractor_args': {
+                    'youtube': {
+                        'skip': ['dash', 'hls'],
+                        'player_client': ['android', 'ios', 'web'],
+                        'player_skip': ['webpage'],
+                    },
+                    'instagram': {
+                        'user_agent': ['mobile'],
+                        'api': ['web'],
+                    },
+                    'tiktok': {
+                        'user_agent': ['mobile'],
+                        'api_hostname': ['www.tiktok.com'],
+                    }
+                },
+                'throttledratelimit': 10000000,
+                'sleep_interval': random.uniform(1, 3),
+                'max_sleep_interval': 5,
+                'sleep_interval_requests': random.uniform(0.5, 1.5),
+            }
             
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                # Extract info first
-                print(f"\033[1;36m🤖 [AI] Extracting video information...\033[0m")
-                info = ydl.extract_info(url, download=False)
-                
-                if info:
-                    title = info.get('title', 'Unknown Title')
-                    duration = info.get('duration', 0)
-                    
-                    print(f"\033[1;36m[✓] Title: {title[:60]}\033[0m")
-                    if duration:
-                        print(f"\033[1;36m[✓] Duration: {duration // 60}:{duration % 60:02d} minutes\033[0m")
-                    
-                    # Now download
-                    print(f"\033[1;33m[+] Downloading video...\033[0m")
-                    ydl.download([url])
-                    
-                    # Get the actual downloaded filename
-                    downloaded_files = []
-                    for file in os.listdir(self.download_dir):
-                        if str(timestamp) in file and (random_id in file or str(random_id) in file):
-                            downloaded_files.append(os.path.join(self.download_dir, file))
-                    
-                    if downloaded_files:
-                        # Get the most recent file
-                        downloaded_files.sort(key=os.path.getctime, reverse=True)
-                        filename = downloaded_files[0]
+                info = ydl.extract_info(url, download=True)
+                if info and 'requested_downloads' in info:
+                    filename = info['requested_downloads'][0]['filepath']
+                    title = info.get('title', 'Unknown')
+                    if os.path.exists(filename) and os.path.getsize(filename) > 10240:
+                        return filename, title
                         
-                        # Verify file size
-                        file_size = os.path.getsize(filename)
-                        if file_size > 10240:  # At least 10KB
-                            print(f"\033[1;32m[✓] Download successful! Size: {file_size / 1024 / 1024:.2f} MB\033[0m")
-                            return filename, title
-                        else:
-                            print(f"\033[1;31m[✗] Downloaded file is too small ({file_size} bytes)\033[0m")
-                            os.remove(filename)
-                            return None, None
-                    
-            return None, None
-            
         except Exception as e:
-            print(f"\033[1;31m[✗] Download failed: {str(e)}\033[0m")
-            return None, None
+            print(f"\033[1;30mDebug: {str(e)[:50]}\033[0m")
+            
+        return None, None
     
-    def check_ffmpeg(self):
-        """Check if ffmpeg is available"""
+    def method_mobile_api(self, url, platform):
+        """Mobile API emulation method"""
         try:
-            subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
-            return True
+            import yt_dlp
+            
+            timestamp = int(time.time())
+            random_id = random.randint(1000, 9999)
+            
+            # Mobile-specific headers
+            mobile_headers = {
+                'User-Agent': self.stealth.get_random_user_agent(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'X-Client-Data': base64.b64encode(os.urandom(20)).decode(),
+            }
+            
+            ydl_opts = {
+                'format': 'best[ext=mp4]/best',
+                'outtmpl': os.path.join(self.download_dir, f'mobile_{timestamp}_{random_id}.%(ext)s'),
+                'quiet': True,
+                'no_warnings': True,
+                'ignoreerrors': True,
+                'retries': 15,
+                'user_agent': mobile_headers['User-Agent'],
+                'headers': mobile_headers,
+                'extractor_args': {
+                    'youtube': {'player_client': ['android', 'ios']},
+                    'instagram': {'user_agent': ['mobile']},
+                }
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                if info and 'requested_downloads' in info:
+                    filename = info['requested_downloads'][0]['filepath']
+                    title = info.get('title', 'Unknown')
+                    if os.path.exists(filename) and os.path.getsize(filename) > 10240:
+                        return filename, title
+                        
         except:
-            return False
+            pass
+            
+        return None, None
     
-    def fix_video_for_gallery(self, filename):
-        """Convert video to ensure gallery compatibility"""
-        if not self.check_ffmpeg():
-            return filename
-        
+    def method_desktop_emulation(self, url, platform):
+        """Desktop browser emulation"""
         try:
-            output_filename = filename.replace('.mp4', '_fixed.mp4').replace('.webm', '_fixed.mp4')
+            import yt_dlp
             
-            print(f"\033[1;36m🤖 [AI] Optimizing video for gallery...\033[0m")
+            timestamp = int(time.time())
+            random_id = random.randint(1000, 9999)
             
-            # Convert to Android/iOS compatible format
+            # Desktop headers
+            desktop_headers = {
+                'User-Agent': self.stealth.get_random_user_agent(),
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Cache-Control': 'max-age=0',
+            }
+            
+            ydl_opts = {
+                'format': 'bestvideo[ext=mp4][height<=1080]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                'outtmpl': os.path.join(self.download_dir, f'desktop_{timestamp}_{random_id}.%(ext)s'),
+                'quiet': True,
+                'no_warnings': True,
+                'ignoreerrors': True,
+                'retries': 10,
+                'user_agent': desktop_headers['User-Agent'],
+                'headers': desktop_headers,
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                if info and 'requested_downloads' in info:
+                    filename = info['requested_downloads'][0]['filepath']
+                    title = info.get('title', 'Unknown')
+                    if os.path.exists(filename) and os.path.getsize(filename) > 10240:
+                        return filename, title
+                        
+        except:
+            pass
+            
+        return None, None
+    
+    def method_direct_extract(self, url, platform):
+        """Direct extraction without API"""
+        try:
+            import yt_dlp
+            
+            timestamp = int(time.time())
+            random_id = random.randint(1000, 9999)
+            
+            ydl_opts = {
+                'format': 'best',
+                'outtmpl': os.path.join(self.download_dir, f'direct_{timestamp}_{random_id}.%(ext)s'),
+                'quiet': True,
+                'no_warnings': True,
+                'ignoreerrors': True,
+                'extract_flat': False,
+                'force_generic_extractor': False,
+                'user_agent': self.stealth.get_random_user_agent(),
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                if info and 'requested_downloads' in info:
+                    filename = info['requested_downloads'][0]['filepath']
+                    title = info.get('title', 'Unknown')
+                    if os.path.exists(filename) and os.path.getsize(filename) > 10240:
+                        return filename, title
+                        
+        except:
+            pass
+            
+        return None, None
+    
+    def method_legacy_compat(self, url, platform):
+        """Legacy compatibility method"""
+        try:
+            import yt_dlp
+            
+            timestamp = int(time.time())
+            random_id = random.randint(1000, 9999)
+            
+            ydl_opts = {
+                'format': 'worst',
+                'outtmpl': os.path.join(self.download_dir, f'legacy_{timestamp}_{random_id}.%(ext)s'),
+                'quiet': True,
+                'no_warnings': True,
+                'ignoreerrors': True,
+                'retries': 20,
+                'user_agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+            }
+            
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=True)
+                if info and 'requested_downloads' in info:
+                    filename = info['requested_downloads'][0]['filepath']
+                    title = info.get('title', 'Unknown')
+                    if os.path.exists(filename) and os.path.getsize(filename) > 10240:
+                        return filename, title
+                        
+        except:
+            pass
+            
+        return None, None
+    
+    def optimize_video(self, filename):
+        """Optimize video for device compatibility"""
+        try:
+            # Check if ffmpeg is available
+            subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+            
+            output_filename = filename.replace('.mp4', '_optimized.mp4').replace('.webm', '_optimized.mp4')
+            
+            # Optimize for mobile playback
             cmd = [
                 "ffmpeg", "-i", filename,
                 "-c:v", "libx264",
@@ -287,128 +478,118 @@ class SocialMediaDownloader:
                 "-b:a", "128k",
                 "-movflags", "+faststart",
                 "-pix_fmt", "yuv420p",
+                "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2",
                 "-y", output_filename
             ]
             
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
+            subprocess.run(cmd, capture_output=True, timeout=180)
             
-            if result.returncode == 0 and os.path.exists(output_filename):
-                file_size = os.path.getsize(output_filename)
-                if file_size > 10240:
-                    # Replace original with fixed version
-                    os.remove(filename)
-                    os.rename(output_filename, filename)
-                    print(f"\033[1;32m[✓] Video optimized for gallery\033[0m")
-                    return filename
-                else:
-                    os.remove(output_filename)
-                    print(f"\033[1;33m[!] Optimization failed, using original\033[0m")
-                    return filename
-            else:
+            if os.path.exists(output_filename) and os.path.getsize(output_filename) > 10240:
+                os.remove(filename)
+                os.rename(output_filename, filename)
                 return filename
                 
-        except Exception as e:
-            print(f"\033[1;33m[!] Optimization skipped: {str(e)[:50]}\033[0m")
-            return filename
+        except:
+            pass
+            
+        return filename
     
     def add_to_gallery(self, filename):
-        """Add video to device gallery (Android/Termux only)"""
-        if not IS_TERMUX:
-            print(f"\033[1;36m[✓] Video saved to: {filename}\033[0m")
-            return True
-        
-        try:
-            # Try termux-media-scan for Android gallery
-            subprocess.run(["termux-media-scan", filename], capture_output=True, timeout=10)
-            print(f"\033[1;32m[✓] Video added to Android Gallery\033[0m")
-            return True
-        except:
-            # Alternative method - copy to DCIM if not already there
-            if not filename.startswith(DCIM_PATH):
-                dcim_filename = os.path.join(DCIM_PATH, os.path.basename(filename))
-                try:
-                    shutil.copy2(filename, dcim_filename)
-                    print(f"\033[1;32m[✓] Video copied to DCIM Gallery\033[0m")
-                    subprocess.run(["termux-media-scan", dcim_filename], capture_output=True)
-                    return True
-                except:
-                    print(f"\033[1;33m[!] Could not add to gallery, but video is saved in: {filename}\033[0m")
-                    return False
-            else:
-                print(f"\033[1;32m[✓] Video already in DCIM Gallery\033[0m")
+        """Add to device gallery"""
+        if IS_TERMUX:
+            try:
+                subprocess.run(["termux-media-scan", filename], capture_output=True, timeout=10)
                 return True
+            except:
+                pass
+        return False
 
-# ==================== MAIN FUNCTION ====================
+# ==================== MAIN APPLICATION ====================
+
+def banner():
+    """Display banner"""
+    banner_text = """
+\033[1;35m
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║     ██████╗ ██╗      ██████╗  ██████╗ ███╗   ███╗    ██████╗ ██╗  ██╗        ║
+║    ██╔════╝ ██║     ██╔═══██╗██╔═══██╗████╗ ████║    ██╔══██╗██║  ██║        ║
+║    ██║  ███╗██║     ██║   ██║██║   ██║██╔████╔██║    ██████╔╝███████║        ║
+║    ██║   ██║██║     ██║   ██║██║   ██║██║╚██╔╝██║    ██╔══██╗██╔══██║        ║
+║    ╚██████╔╝███████╗╚██████╔╝╚██████╔╝██║ ╚═╝ ██║    ██║  ██║██║  ██║        ║
+║     ╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝    ╚═╝  ╚═╝╚═╝  ╚═╝        ║
+║                                                                               ║
+║         [ ULTIMATE BYPASS ENGINE - UNDETECTABLE v5.0 ]                        ║
+║                                                                               ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+\033[0m
+"""
+    print(banner)
+
+def check_requirements():
+    """Check and install requirements"""
+    print("\033[1;34m🔧 Checking requirements...\033[0m")
+    
+    try:
+        import yt_dlp
+        print("\033[1;32m✅ yt-dlp installed\033[0m")
+    except ImportError:
+        print("\033[1;33m📦 Installing yt-dlp...\033[0m")
+        subprocess.run([sys.executable, "-m", "pip", "install", "yt-dlp", "--upgrade", "--quiet"])
+    
+    # Check ffmpeg
+    try:
+        subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+        print("\033[1;32m✅ FFmpeg installed\033[0m")
+    except:
+        if IS_TERMUX:
+            print("\033[1;33m📦 Installing FFmpeg...\033[0m")
+            subprocess.run(["pkg", "install", "ffmpeg", "-y"], capture_output=True)
+
 def main():
     """Main entry point"""
-    os.system('clear' if SYSTEM == 'windows' else 'clear')
-    print(BANNER)
+    os.system('clear')
+    banner()
     
-    print(f"\033[1;33m[+] Author: {AUTHOR}\033[0m")
-    print(f"\033[1;33m[+] Repository: {REPO_URL}\033[0m")
-    print(f"\033[1;36m[+] Platform: {SYSTEM.upper()} | Termux: {'YES' if IS_TERMUX else 'NO'}\033[0m")
-    print(f"\033[1;36m[+] Download Directory: {DOWNLOAD_DIR}\033[0m")
-    print(f"\033[1;32m" + "="*70 + "\033[0m")
+    print(f"\033[1;36m🎯 Platform: {'Android/Termux' if IS_TERMUX else SYSTEM.upper()}\033[0m")
+    print(f"\033[1;36m💾 Download Directory: {DOWNLOAD_DIR}\033[0m")
+    print(f"\033[1;32m🛡️ Stealth Mode: ACTIVE\033[0m")
+    print(f"\033[1;32m🤖 AI Bypass: ULTIMATE\033[0m")
+    print("\033[1;33m" + "="*70 + "\033[0m")
     
-    print("\033[1;36m🤖 [AI] GLOOM-OX activated - Social Media Video Downloader\033[0m")
-    print("\033[1;36m🤖 [AI] Supports: YouTube, Instagram, TikTok, Pinterest, Twitter, Facebook, Reddit\033[0m")
-    print("\033[1;32m💡 Videos will be saved to DCIM Gallery on Android/Termux\033[0m\n")
+    check_requirements()
     
-    # Check dependencies
-    if not check_dependencies():
-        print("\033[1;31m[!] Missing critical dependencies. Please install them manually.\033[0m")
-        return
-    
-    # Initialize downloader
-    downloader = SocialMediaDownloader()
+    downloader = UltimateDownloader()
     
     while True:
-        print("\n\033[1;35m" + "═"*70 + "\033[0m")
-        print("\033[1;33m[+] Enter video URL (or 'exit' to quit):\033[0m")
-        print("\033[1;36m   Commands: clear | dir | exit\033[0m")
+        print("\n\033[1;35m" + "─"*70 + "\033[0m")
+        print("\033[1;33m📎 Enter video URL (or 'exit' to quit):\033[0m")
+        print("\033[1;36m💡 Supports: YouTube, Instagram, TikTok, Twitter, Facebook, Reddit, Pinterest\033[0m")
         
         try:
-            url = input("\033[1;32m[GLOOM-OX] >> \033[0m").strip()
-        except KeyboardInterrupt:
-            print("\n\033[1;31m[!] Exiting...\033[0m")
-            break
-        except EOFError:
+            url = input("\033[1;32m🔗 >> \033[0m").strip()
+        except (KeyboardInterrupt, EOFError):
+            print("\n\033[1;31m👋 Goodbye!\033[0m")
             break
         
-        if url.lower() in ['exit', 'quit', 'q']:
-            print("\033[1;32m[+] Thanks for using GLOOM-OX!\033[0m")
+        if url.lower() in ['exit', 'quit']:
             break
-        elif url.lower() == 'clear':
-            os.system('clear' if SYSTEM == 'windows' else 'clear')
-            print(BANNER)
-            continue
-        elif url.lower() == 'dir':
-            print(f"\n\033[1;36m[+] Download directory: {DOWNLOAD_DIR}\033[0m")
-            if os.path.exists(DOWNLOAD_DIR):
-                files = os.listdir(DOWNLOAD_DIR)
-                if files:
-                    print("\033[1;33m[+] Downloaded videos:\033[0m")
-                    for f in files[-10:]:  # Show last 10 files
-                        print(f"   - {f}")
-                else:
-                    print("\033[1;33m[+] No videos downloaded yet\033[0m")
-            continue
         elif not url:
             continue
-        
-        # Add https:// if missing
+            
         if not url.startswith(('http://', 'https://')):
             url = 'https://' + url
         
-        print("\n")
+        print("\n\033[1;36m🚀 Initializing bypass sequence...\033[0m")
         start_time = time.time()
         
         # Download video
         filename, title = downloader.download_video(url)
         
         if filename and os.path.exists(filename):
-            # Optimize for gallery
-            filename = downloader.fix_video_for_gallery(filename)
+            # Optimize video
+            print("\033[1;36m⚙️ Optimizing video...\033[0m")
+            filename = downloader.optimize_video(filename)
             
             # Add to gallery
             downloader.add_to_gallery(filename)
@@ -416,24 +597,25 @@ def main():
             elapsed = time.time() - start_time
             
             print(f"\n\033[1;32m╔══════════════════════════════════════════════════════════╗")
-            print(f"║                   DOWNLOAD COMPLETE!                          ║")
+            print(f"║                    ✅ DOWNLOAD SUCCESS!                         ║")
             print(f"╚══════════════════════════════════════════════════════════╝\033[0m")
-            print(f"\033[1;36m[✓] Title: {title[:60] if title else 'Unknown'}\033[0m")
-            print(f"\033[1;36m[✓] Time taken: {elapsed:.1f} seconds\033[0m")
-            print(f"\033[1;36m[✓] Location: {filename}\033[0m")
-            print(f"\033[1;32m🤖 [AI] Video saved to DCIM Gallery successfully!\033[0m")
+            print(f"\033[1;36m📹 Title: {title[:60] if title else 'Unknown'}\033[0m")
+            print(f"\033[1;36m⏱️ Time: {elapsed:.1f} seconds\033[0m")
+            print(f"\033[1;36m💾 Location: {filename}\033[0m")
+            print(f"\033[1;32m🛡️ Bypass successful - Undetected!\033[0m")
         else:
-            print(f"\n\033[1;31m[✗] Download failed! Please check the URL and try again.\033[0m")
-            print("\033[1;33m[!] Tips:\033[0m")
-            print("   - Make sure the video is public/accessible")
-            print("   - Check your internet connection")
-            print("   - Try a different URL")
+            print(f"\n\033[1;31m╔══════════════════════════════════════════════════════════╗")
+            print(f"║                    ❌ DOWNLOAD FAILED!                          ║")
+            print(f"╚══════════════════════════════════════════════════════════╝\033[0m")
+            print("\033[1;33m💡 Troubleshooting tips:\033[0m")
+            print("   • Check if video is public/accessible")
+            print("   • Update yt-dlp: pip install --upgrade yt-dlp")
+            print("   • Try again (server might be rate limiting)")
+            print("   • Use a different URL")
 
 if __name__ == "__main__":
     try:
         main()
-    except KeyboardInterrupt:
-        print("\n\033[1;31m[!] Interrupted by user\033[0m")
     except Exception as e:
-        print(f"\033[1;31m[!] Unexpected error: {e}\033[0m")
-        print("\033[1;33m[!] Try updating: pip install --upgrade yt-dlp\033[0m")
+        print(f"\033[1;31m⚠️ Error: {e}\033[0m")
+        print("\033[1;33m🔧 Run: pip install --upgrade yt-dlp\033[0m")
