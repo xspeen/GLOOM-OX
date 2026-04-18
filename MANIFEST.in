@@ -1,19 +1,197 @@
-# Include documentation
-include docs/*.md
+# ============================================================
+# GLOOM-OX v5.1 - MANIFEST.in
+# Specifies which files to include in the source distribution
+# ============================================================
+
+# ==================== Documentation ====================
+include README.md
 include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include SECURITY.md
+include docs/*.md
+include docs/**/*.md
+
+# ==================== Configuration Files ====================
 include requirements.txt
+include setup.py
 include setup.cfg
 include pyproject.toml
+include .pre-commit-config.yaml
+include .dockerignore
+include .gitignore
 
-# Include assets
-include assets/*.png
-include assets/*.txt
+# ==================== Docker Files ====================
+include Dockerfile
+include Dockerfile.alpine
+include Dockerfile.termux
+include docker-compose.yml
+include docker-compose.prod.yml
 
-# Include scripts
+# ==================== Scripts ====================
 include scripts/*.sh
 include scripts/*.ps1
+include scripts/*.bat
+include scripts/install.sh
+include scripts/install.ps1
+include scripts/uninstall.sh
+include scripts/uninstall.ps1
+include scripts/gloom_ox.sh
+include scripts/gloom_ox.bat
 
-# Exclude tests from distribution
-prune tests
-prune .github
+# ==================== Assets ====================
+include assets/*.png
+include assets/*.ico
+include assets/*.svg
+include assets/*.jpg
+include assets/*.jpeg
+include assets/*.gif
+include assets/*.txt
+include assets/fonts/*
+include assets/sounds/*
+
+# ==================== GitHub Workflows ====================
+include .github/workflows/*.yml
+include .github/*.yml
+include .github/**/*.yml
+
+# ==================== Package Data ====================
+recursive-include gloom_ox *.py
+recursive-include gloom_ox *.txt
+recursive-include gloom_ox *.md
+recursive-include gloom_ox *.pyi
+recursive-include gloom_ox *.typed
+
+# ==================== Data Files ====================
+include data/*.json
+include data/*.txt
+include config/*.yaml
+include config/*.yml
+include config/*.json
+
+# ==================== Examples ====================
+include examples/*.py
+include examples/*.md
+include examples/**/*.py
+
+# ==================== Tests ====================
+# Include test files (for source distribution)
+include tests/*.py
+include tests/**/*.py
+include tests/fixtures/*
+
+# ==================== Exclude Unnecessary Files ====================
+# Python cache
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude *.dll
+global-exclude *.exe
+
+# IDE files
+global-exclude .vscode/*
+global-exclude .idea/*
+global-exclude *.swp
+global-exclude *.swo
+global-exclude *~
+
+# OS files
+global-exclude .DS_Store
+global-exclude Thumbs.db
+global-exclude desktop.ini
+
+# Logs and temp
+global-exclude *.log
+global-exclude *.tmp
+global-exclude *.temp
+global-exclude *.cache
+
+# Downloads (exclude from distribution)
+global-exclude *.mp4
+global-exclude *.mkv
+global-exclude *.webm
+global-exclude *.avi
+global-exclude *.mov
+global-exclude downloads/*
+global-exclude temp_*
+global-exclude frag_*
+
+# Secret files
+global-exclude *.cookies
+global-exclude *.key
+global-exclude *.pem
+global-exclude *.secret
+global-exclude .env
+global-exclude .venv
+
+# Prune specific directories
 prune __pycache__
+prune .pytest_cache
+prune .mypy_cache
+prune .ruff_cache
+prune .coverage
+prune htmlcov
+prune dist
+prune build
+prune *.egg-info
+prune .git
+prune .github/ISSUE_TEMPLATE
+prune .vscode
+prune .idea
+
+# Keep GitHub workflows but exclude certain files
+exclude .github/dependabot.yml.bak
+exclude .github/workflows/*.bak
+
+# Exclude backup files
+global-exclude *.bak
+global-exclude *.backup
+global-exclude *.orig
+global-exclude *.old
+
+# ==================== Include Version File ====================
+include VERSION
+include version.txt
+
+# ==================== Include Shell Scripts ====================
+include *.sh
+include *.bash
+
+# ==================== Include Windows Files ====================
+include *.bat
+include *.cmd
+include *.ps1
+
+# ==================== Include Jupyter Notebooks (if any) ====================
+include *.ipynb
+recursive-include notebooks *.ipynb
+
+# ==================== Include Configuration Examples ====================
+include config.example.json
+include config.example.yaml
+include .env.example
+
+# ==================== Include Database Schemas ====================
+include schemas/*.sql
+include schemas/*.json
+
+# ==================== Include Web Assets ====================
+include web/*.html
+include web/*.css
+include web/*.js
+recursive-include web/static *
+
+# ==================== Include Localization ====================
+include locale/*.po
+include locale/*.mo
+recursive-include locale/**/*.po
+recursive-include locale/**/*.mo
+
+# ==================== Final Recursive Includes ====================
+recursive-include . *.*
+recursive-exclude . *~
+recursive-exclude . *.pyc
+recursive-exclude . __pycache__
+recursive-exclude . *.log
+recursive-exclude . *.tmp
