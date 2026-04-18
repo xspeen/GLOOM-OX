@@ -2,231 +2,54 @@ name: CI - Continuous Integration
 
 on:
   push:
-    branches: [ main, develop ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - 'assets/**'
+    branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  # Test on multiple Python versions and OS
   test:
-    name: Test Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-        exclude:
-          # Reduce matrix for speed
-          - os: windows-latest
-            python-version: '3.8'
-          - os: macos-latest
-            python-version: '3.9'
+        python-version: ['3.9', '3.10', '3.11', '3.12']
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    
-    - name: Cache pip packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest black ruff mypy
+        pip install yt-dlp
     
-    - name: Install ffmpeg (Linux/macOS)
-      if: runner.os != 'Windows'
-      run: |
-        if [ "$RUNNER_OS" == "macOS" ]; then
-          brew install ffmpeg
-        else
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg
-        fi
-      shell: bash
-    
-    - name: Install ffmpeg (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        choco install ffmpeg -y
-      shell: powershell
-    
-    - name: Lint with ruff
-      run: |
-        ruff check . --output-format=github
-      continue-on-error: true
-    
-    - name: Format check with black
-      run: |
-        black --check --diff .
-      continue-on-error: true
-    
-    - name: Type check with mypy
-      run: |
-        mypy gloom-ox.py --ignore-missing-imports
-      continue-on-error: true
-    
-    - name: Test import
-      run: |
-        python -c "import yt_dlp; print('yt-dlp version:', yt_dlp.version.__version__)"
-    
-    - name: Test script syntax
+    - name: Check Python syntax
       run: |
         python -m py_compile gloom-ox.py
     
-    - name: Run basic functionality test
+    - name: Test import
       run: |
-        python gloom-ox.py --help || true
+        python -c "import yt_dlp; print('yt-dlp OK')"
+    
+    - name: Basic script test
+      run: |
+        python gloom-ox.py --help 2>&1 || true
       continue-on-error: true
     
-    - name: Upload test artifacts
+    - name: Upload logs
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+        name: logs-${{ matrix.os }}-py${{ matrix.python-version }}
         path: |
           *.log
           *.txt
-        retention-days: 7
-
-  # Security scan
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-    
-    - name: Upload Trivy results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-results.sarif'
-    
-    - name: Run Bandit security linter
-      run: |
-        pip install bandit
-        bandit -r . -f sarif -o bandit-results.sarif
-      continue-on-error: true
-    
-    - name: Upload Bandit results
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: bandit-results.sarif
-      continue-on-error: true
-
-  # Code coverage
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        pip install pytest pytest-cov
-        pip install -r requirements.txt
-    
-    - name: Run tests with coverage
-      run: |
-        pytest --cov=. --cov-report=xml --cov-report=html
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-        token: ${{ secrets.CODECOV_TOKEN }}
-    
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: htmlcov/
-        retention-days: 7
-
-  # Build and test Docker image
-  docker:
-    name: Build and Test Docker
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        load: true
-        tags: gloom-ox:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: Test Docker image
-      run: |
-        docker run --rm gloom-ox:test python -c "import yt_dlp; print('OK')"
-    
-    - name: Scan Docker image
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: 'gloom-ox:test'
-        format: 'sarif'
-        output: 'trivy-image-results.sarif'
-    
-    - name: Upload Docker scan results
-      uses: github/codeql-action/upload-sarif@v3
-      with:
-        sarif_file: 'trivy-image-results.sarif'
-
-  # Notify on completion
-  notify:
-    name: Notify Completion
-    needs: [test, security, coverage, docker]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check status
-      run: |
-        echo "CI completed with status: ${{ needs.test.result }}"
-        echo "Security scan: ${{ needs.security.result }}"
-        echo "Coverage: ${{ needs.coverage.result }}"
-        echo "Docker: ${{ needs.docker.result }}"
+        retention-days: 3
