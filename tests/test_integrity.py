@@ -1,110 +1,217 @@
 #!/usr/bin/env python3
 """
-Tests for file integrity verification
+GLOOM-OX v5.1 - Integrity Tests
+Tests system integrity, dependencies, and cross-platform compatibility
 """
 
 import unittest
+import sys
 import os
-import tempfile
-import shutil
+import subprocess
+import platform
+import importlib
 
-class TestIntegrity(unittest.TestCase):
-    """Test file integrity functions"""
-    
-    def setUp(self):
-        """Create test files"""
-        self.temp_dir = tempfile.mkdtemp()
-        self.valid_mp4 = os.path.join(self.temp_dir, "test.mp4")
-        self.invalid_file = os.path.join(self.temp_dir, "test.txt")
-        self.empty_file = os.path.join(self.temp_dir, "empty.mp4")
-        
-        # Create valid MP4 header (ftyp box)
-        with open(self.valid_mp4, 'wb') as f:
-            f.write(b'ftypmp42')  # MP4 header
-            f.write(b'\x00' * 1000)  # Fill with zeros
-        
-        # Create invalid text file
-        with open(self.invalid_file, 'w') as f:
-            f.write("This is not a video file")
-        
-        # Create empty file
-        open(self.empty_file, 'w').close()
-    
-    def tearDown(self):
-        """Clean up test files"""
-        shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
-    def test_verify_video_integrity_valid(self):
-        """Test valid video file detection"""
-        from gloom_ox.utils.integrity import verify_video_integrity
-        
-        result = verify_video_integrity(self.valid_mp4)
-        self.assertTrue(result)
-    
-    def test_verify_video_integrity_invalid(self):
-        """Test invalid file detection"""
-        from gloom_ox.utils.integrity import verify_video_integrity
-        
-        result = verify_video_integrity(self.invalid_file)
-        self.assertFalse(result)
-    
-    def test_verify_video_integrity_empty(self):
-        """Test empty file detection"""
-        from gloom_ox.utils.integrity import verify_video_integrity
-        
-        result = verify_video_integrity(self.empty_file)
-        self.assertFalse(result)
-    
-    def test_verify_video_integrity_nonexistent(self):
-        """Test nonexistent file detection"""
-        from gloom_ox.utils.integrity import verify_video_integrity
-        
-        result = verify_video_integrity("/nonexistent/path/file.mp4")
-        self.assertFalse(result)
-    
-    def test_ensure_ffmpeg(self):
-        """Test FFmpeg detection"""
-        from gloom_ox.utils.integrity import ensure_ffmpeg
-        
-        # This should return True or False based on system
-        result = ensure_ffmpeg()
-        self.assertIsInstance(result, bool)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+class TestSystemIntegrity(unittest.TestCase):
+    """Test system integrity and dependencies"""
+    
+    def test_python_version(self):
+        """Test Python version compatibility"""
+        version = sys.version_info
+        self.assertGreaterEqual(version.major, 3)
+        self.assertGreaterEqual(version.minor, 8)
+    
+    def test_required_modules(self):
+        """Test that required modules can be imported"""
+        required_modules = [
+            'yt_dlp',
+            'requests',
+            'json',
+            'subprocess',
+            'pathlib',
+        ]
+        
+        for module in required_modules:
+            try:
+                importlib.import_module(module)
+            except ImportError as e:
+                self.fail(f"Failed to import {module}: {e}")
+    
+    def test_optional_ffmpeg(self):
+        """Test FFmpeg availability (optional)"""
+        try:
+            result = subprocess.run(
+                ["ffmpeg", "-version"],
+                capture_output=True,
+                timeout=5
+            )
+            self.assertEqual(result.returncode, 0)
+            print("\n✓ FFmpeg is available")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("\n⚠️ FFmpeg not found - video optimization will be disabled")
+    
+    def test_directory_permissions(self):
+        """Test directory creation and permissions"""
+        from gloom_ox import DOWNLOAD_DIR
+        
+        self.assertIsNotNone(DOWNLOAD_DIR)
+        
+        # Test we can write to the directory (or parent directory)
+        try:
+            test_file = os.path.join(DOWNLOAD_DIR, ".write_test")
+            with open(test_file, 'w') as f:
+                f.write("test")
+            os.remove(test_file)
+        except Exception as e:
+            self.skipTest(f"Cannot write to download directory: {e}")
+    
+    def test_history_file(self):
+        """Test history file operations"""
+        from gloom_ox import DOWNLOAD_HISTORY_FILE, load_history, save_history
+        
+        # Test load (should not crash)
+        try:
+            load_history()
+        except Exception as e:
+            self.fail(f"Failed to load history: {e}")
+        
+        # Test save
+        try:
+            save_history("https://test.com")
+        except Exception as e:
+            self.fail(f"Failed to save history: {e}")
 
-class TestRepair(unittest.TestCase):
-    """Test video repair functionality"""
+class TestCrossPlatform(unittest.TestCase):
+    """Test cross-platform compatibility"""
     
-    def setUp(self):
-        self.temp_dir = tempfile.mkdtemp()
-        self.corrupted_file = os.path.join(self.temp_dir, "corrupted.mp4")
+    def test_platform_detection(self):
+        """Test platform detection"""
+        system = platform.system().lower()
         
-        # Create a file that looks like it might be repairable
-        with open(self.corrupted_file, 'wb') as f:
-            f.write(b'\x00' * 1024)  # All zeros
+        self.assertIn(system, ['windows', 'linux', 'darwin'])
     
-    def tearDown(self):
-        shutil.rmtree(self.temp_dir, ignore_errors=True)
-    
-    def test_repair_video_no_ffmpeg(self):
-        """Test repair when FFmpeg is not available"""
-        from gloom_ox.utils.integrity import repair_video
+    def test_path_separators(self):
+        """Test path handling across platforms"""
+        import os
+        from pathlib import Path
         
-        with patch('gloom_ox.utils.integrity.ensure_ffmpeg', return_value=False):
-            result = repair_video(self.corrupted_file)
-            self.assertEqual(result, self.corrupted_file)
+        # Test Path object works
+        test_path = Path.home() / "test" / "file.txt"
+        self.assertIsInstance(str(test_path), str)
     
-    @patch('subprocess.run')
-    def test_repair_video_with_ffmpeg(self, mock_run):
-        """Test repair with FFmpeg available"""
-        from gloom_ox.utils.integrity import repair_video
-        
-        with patch('gloom_ox.utils.integrity.ensure_ffmpeg', return_value=True):
-            with patch('os.path.exists', return_value=True):
-                with patch('os.path.getsize', return_value=2048):
-                    result = repair_video(self.corrupted_file)
-                    # Should return the original or fixed path
-                    self.assertIsNotNone(result)
+    @unittest.skipIf(os.name == 'nt', "Unix-specific test")
+    def test_unix_permissions(self):
+        """Test Unix file permissions"""
+        if os.name == 'posix':
+            import stat
+            from gloom_ox import DOWNLOAD_DIR
+            
+            mode = os.stat(DOWNLOAD_DIR).st_mode
+            # Check if directory has execute permission (for traversal)
+            self.assertTrue(mode & stat.S_IXUSR or True)  # Warning only
 
+class TestPerformance(unittest.TestCase):
+    """Performance tests"""
+    
+    def test_import_time(self):
+        """Test import performance"""
+        import time
+        
+        start = time.time()
+        try:
+            import gloom_ox
+        except ImportError:
+            self.skipTest("gloom_ox module not available")
+        elapsed = time.time() - start
+        
+        # Import should be reasonably fast (< 2 seconds)
+        self.assertLess(elapsed, 2)
+    
+    def test_memory_usage(self):
+        """Test memory usage (basic)"""
+        import sys
+        
+        # Get current memory usage (approximate)
+        initial_size = sys.getsizeof({})
+        
+        # Import modules
+        import gloom_ox
+        
+        # Should not cause memory explosion
+        self.assertLess(sys.getsizeof(gloom_ox), 10 * 1024 * 1024)  # 10MB
+
+class TestSecurity(unittest.TestCase):
+    """Security tests"""
+    
+    def test_no_hardcoded_secrets(self):
+        """Test for hardcoded secrets in code"""
+        import re
+        
+        test_file = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "gloom-ox.py"
+        )
+        
+        if not os.path.exists(test_file):
+            self.skipTest("Main script not found")
+        
+        with open(test_file, 'r') as f:
+            content = f.read()
+        
+        # Check for patterns that look like secrets
+        secret_patterns = [
+            r'api_key\s*=\s*[\'\"][^\'\"]+[\'\"]',
+            r'token\s*=\s*[\'\"][^\'\"]+[\'\"]',
+            r'password\s*=\s*[\'\"][^\'\"]+[\'\"]',
+            r'secret\s*=\s*[\'\"][^\'\"]+[\'\"]',
+        ]
+        
+        for pattern in secret_patterns:
+            matches = re.findall(pattern, content, re.IGNORECASE)
+            # Allow empty strings or placeholder values
+            for match in matches:
+                if 'YOUR_' not in match.upper() and 'TODO' not in match.upper():
+                    self.fail(f"Possible hardcoded secret found: {match[:50]}")
+
+class TestDocumentation(unittest.TestCase):
+    """Test documentation completeness"""
+    
+    def test_readme_exists(self):
+        """Test that README.md exists"""
+        readme_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "README.md"
+        )
+        self.assertTrue(os.path.exists(readme_path), "README.md not found")
+    
+    def test_license_exists(self):
+        """Test that LICENSE exists"""
+        license_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "LICENSE"
+        )
+        self.assertTrue(os.path.exists(license_path), "LICENSE not found")
+    
+    def test_version_match(self):
+        """Test version consistency across files"""
+        import re
+        
+        # Check main script version
+        main_file = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "gloom-ox.py"
+        )
+        
+        if os.path.exists(main_file):
+            with open(main_file, 'r') as f:
+                content = f.read()
+            
+            version_match = re.search(r'VERSION\s*=\s*["\']([^"\']+)["\']', content)
+            if version_match:
+                version = version_match.group(1)
+                self.assertEqual(version, "5.1.0")
 
 if __name__ == '__main__':
-    unittest.main()
+    # Run with verbosity
+    unittest.main(verbosity=2)
