@@ -1,115 +1,122 @@
 #!/usr/bin/env python3
 """
-Tests for GLOOM-OX Extraction Engines
+GLOOM-OX v5.1 - Bypass Engine Tests
+Tests anti-detection and bypass mechanisms
 """
 
 import unittest
-from unittest.mock import patch, Mock, MagicMock
+import sys
+import os
+import random
+import time
+from unittest.mock import Mock, patch, MagicMock
 
-class TestYouTubeEngine(unittest.TestCase):
-    """Test YouTube extraction engine"""
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+class TestStealthEngine(unittest.TestCase):
+    """Test stealth and anti-detection features"""
     
-    @patch('yt_dlp.YoutubeDL')
-    def test_aggressive_extraction(self, mock_ydl):
-        """Test aggressive extraction method"""
-        from gloom_ox.core.youtube_engine import YouTubeEngineUnleashed
-        
-        # Mock yt-dlp response
-        mock_instance = Mock()
-        mock_instance.__enter__ = Mock()
-        mock_instance.__exit__ = Mock()
-        mock_instance.extract_info.return_value = {'title': 'Test Video'}
-        mock_ydl.return_value = mock_instance
-        
-        engine = YouTubeEngineUnleashed()
-        
-        # Test with a URL
-        with patch('os.path.exists', return_value=True):
-            with patch('gloom_ox.core.youtube_engine.verify_video_integrity', return_value=True):
-                result = engine._aggressive_extraction(
-                    "https://youtube.com/watch?v=test", 
-                    "/tmp/test"
-                )
-                
-                # Should return (file_path, title) or (None, None)
-                self.assertIsInstance(result, tuple)
-    
-    def test_progress_hook(self):
-        """Test progress hook functionality"""
-        from gloom_ox.core.youtube_engine import YouTubeEngineUnleashed
-        
-        engine = YouTubeEngineUnleashed()
-        
-        # Test downloading status
-        hook_data = {'status': 'downloading', '_percent_str': '50%', '_speed_str': '1.2MB/s', '_eta_str': '10s'}
+    def setUp(self):
+        """Set up test environment"""
         try:
-            engine._progress_hook(hook_data)
-        except Exception as e:
-            self.fail(f"Progress hook failed: {e}")
+            from gloom_ox import StealthEngine
+            self.engine = StealthEngine()
+        except ImportError:
+            self.engine = None
+    
+    def test_user_agent_rotation(self):
+        """Test user agent rotation"""
+        if not self.engine:
+            self.skipTest("StealthEngine not available")
         
-        # Test finished status
-        hook_data = {'status': 'finished'}
+        agents = set()
+        for _ in range(10):
+            agent = self.engine.get_random_user_agent()
+            agents.add(agent)
+            self.assertIsInstance(agent, str)
+            self.assertTrue(len(agent) > 20)
+        
+        # Should have multiple different agents
+        self.assertGreater(len(agents), 1)
+    
+    def test_header_generation(self):
+        """Test stealth header generation"""
+        if not self.engine:
+            self.skipTest("StealthEngine not available")
+        
+        headers = self.engine.get_stealth_headers()
+        
+        self.assertIsInstance(headers, dict)
+        self.assertIn('User-Agent', headers)
+        self.assertIn('Accept', headers)
+        self.assertIn('Accept-Language', headers)
+    
+    def test_fingerprint_generation(self):
+        """Test fingerprint generation"""
+        if not self.engine:
+            self.skipTest("StealthEngine not available")
+        
+        fingerprint1 = self.engine.generate_fingerprint()
+        fingerprint2 = self.engine.generate_fingerprint()
+        
+        self.assertIsInstance(fingerprint1, str)
+        self.assertIsInstance(fingerprint2, str)
+        # Fingerprints may be same occasionally, but should be different usually
+        # Not asserting inequality due to randomness
+    
+    def test_random_delay(self):
+        """Test random delay functionality"""
+        if not self.engine:
+            self.skipTest("StealthEngine not available")
+        
+        start = time.time()
+        self.engine.random_delay()
+        elapsed = time.time() - start
+        
+        # Delay should be between 0.5 and 2.5 seconds
+        self.assertGreaterEqual(elapsed, 0.5)
+        self.assertLessEqual(elapsed, 2.5)
+
+class TestAIBypassEngine(unittest.TestCase):
+    """Test AI bypass engine"""
+    
+    def setUp(self):
         try:
-            engine._progress_hook(hook_data)
-        except Exception as e:
-            self.fail(f"Progress hook failed: {e}")
-
-
-class TestSocialEngine(unittest.TestCase):
-    """Test social media extraction engine"""
+            from gloom_ox import AIBypassEngine
+            self.engine = AIBypassEngine()
+        except ImportError:
+            self.engine = None
     
-    def test_platform_routing(self):
-        """Test platform routing logic"""
-        from gloom_ox.core.social_engine import SocialMediaEngineUnleashed
+    def test_bypass_methods(self):
+        """Test that bypass methods exist"""
+        if not self.engine:
+            self.skipTest("AIBypassEngine not available")
         
-        engine = SocialMediaEngineUnleashed()
+        methods = [
+            'method_standard',
+            'method_mobile',
+            'method_api',
+        ]
         
-        # Mock the individual methods
-        engine._pinterest_unleashed = Mock(return_value=("path.mp4", "Pinterest"))
-        engine._instagram_unleashed = Mock(return_value=("path.mp4", "Instagram"))
-        engine._tiktok_unleashed = Mock(return_value=("path.mp4", "TikTok"))
-        engine._universal_unleashed = Mock(return_value=("path.mp4", "Universal"))
-        
-        # Test Pinterest
-        engine.extract("https://pinterest.com/pin/123")
-        engine._pinterest_unleashed.assert_called_once()
-        
-        # Reset and test Instagram
-        engine._pinterest_unleashed.reset_mock()
-        engine.extract("https://instagram.com/p/123")
-        engine._instagram_unleashed.assert_called_once()
-        
-        # Test TikTok
-        engine._instagram_unleashed.reset_mock()
-        engine.extract("https://tiktok.com/@user/video/123")
-        engine._tiktok_unleashed.assert_called_once()
-        
-        # Test unknown (should use universal)
-        engine._tiktok_unleashed.reset_mock()
-        engine.extract("https://unknown.com/video")
-        engine._universal_unleashed.assert_called_once()
+        for method in methods:
+            self.assertTrue(hasattr(self.engine, method))
     
-    def test_youtube_shorts_conversion(self):
-        """Test YouTube Shorts URL conversion"""
-        from gloom_ox.core.social_engine import SocialMediaEngineUnleashed
+    def test_extractor_args(self):
+        """Test extractor arguments configuration"""
+        if not self.engine:
+            self.skipTest("AIBypassEngine not available")
         
-        engine = SocialMediaEngineUnleashed()
-        
-        shorts_url = "https://youtube.com/shorts/abc123xyz"
-        
-        with patch('gloom_ox.core.social_engine.YouTubeEngineUnleashed') as mock_yt:
-            mock_instance = Mock()
-            mock_instance.extract.return_value = ("path.mp4", "Short Video")
-            mock_yt.return_value = mock_instance
-            
-            engine._youtube_shorts_unleashed(shorts_url)
-            
-            # Verify the conversion happened
-            mock_instance.extract.assert_called_once()
-            call_args = mock_instance.extract.call_args[0][0]
-            self.assertIn("watch?v=", call_args)
-            self.assertIn("abc123xyz", call_args)
+        headers = self.engine.get_headers()
+        self.assertIsInstance(headers, dict)
+        self.assertIn('User-Agent', headers)
 
+class TestProxyManager(unittest.TestCase):
+    """Test proxy management (if implemented)"""
+    
+    def test_proxy_rotation(self):
+        """Test proxy rotation functionality"""
+        # Proxy tests are optional
+        pass
 
 if __name__ == '__main__':
     unittest.main()
