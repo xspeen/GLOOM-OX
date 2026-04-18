@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2026 xspeen
+Copyright (c) 2024-2026 xspeen (xspeen@proton.me)
+Copyright (c) 2024-2026 GLOOM-OX Contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,3 +20,45 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+## Additional Terms for GLOOM-OX v5.1
+
+### 1. Usage Guidelines
+- This software is intended for personal, educational, and fair use purposes only.
+- Users are responsible for complying with all applicable laws and platform terms of service.
+- The author does not condone copyright infringement or unauthorized downloading of protected content.
+
+### 2. Liability Disclaimer
+- This software may interact with third-party platforms (YouTube, Instagram, TikTok, etc.).
+- Platform terms of service may change, and users are responsible for staying compliant.
+- The author assumes no liability for account restrictions or legal issues arising from misuse.
+
+### 3. Contribution Agreement
+- By contributing to this project, you agree that your contributions will be licensed under the same MIT License.
+- You retain copyright of your contributions but grant the project the right to use them.
+
+### 4. Third-Party Components
+This software includes the following third-party components:
+- **yt-dlp** - Licensed under The Unlicense
+- **FFmpeg** - Licensed under LGPL/GPL
+- **requests** - Licensed under Apache 2.0
+- **beautifulsoup4** - Licensed under MIT
+
+See respective licenses for terms.
+
+### 5. No Endorsement
+The use of platform names (YouTube, Instagram, TikTok, etc.) does not imply endorsement or affiliation with those platforms.
+
+### 6. Updates and Support
+- This software is provided "AS IS" with no guarantee of updates or support.
+- Community support is available via GitHub Issues.
+
+---
+
+**Project Homepage:** https://github.com/xspeen/GLOOM-OX
+**Author Contact:** xspeen@proton.me
+**License Type:** MIT with Additional Terms
+**Effective Date:** 2024-01-01
+**Last Updated:** 2026-04-18
