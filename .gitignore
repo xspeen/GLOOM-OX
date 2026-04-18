@@ -1,52 +1,472 @@
-# Python
+# ============================================================
+# GLOOM-OX v5.1 - Universal .gitignore
+# Covers: Python, IDEs, OS, Docker, Secrets, Downloads, Logs
+# ============================================================
+
+# ==================== Python ====================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg-info/
+*.egg
+*.dist-info/
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+share/python-wheels/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+pythonenv*
+.venv
+.venv*
+venv*/
+virtualenv*
+.env
+.venv
+venv/
 
-# Downloads
+# Python tools
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.hypothesis/
+.benchmarks/
+
+# ==================== Downloads & Media ====================
+# Video files
 downloads/
+GLOOM_OX_Videos/
+GLOOM-OX_Videos/
 EXP-LINK_Videos/
 *.mp4
 *.mkv
 *.webm
+*.avi
+*.mov
+*.flv
+*.wmv
+*.3gp
+*.m4v
+*.mpg
+*.mpeg
+
+# Audio files (if any)
+*.mp3
+*.wav
+*.aac
+*.m4a
+*.ogg
+*.flac
+
+# Images
 *.jpg
+*.jpeg
 *.png
+*.gif
+*.bmp
+*.ico
+*.svg
+
+# Temp files
 temp_*
 frag_*
 tmp_*
+*.tmp
+*.temp
+*.cache
+*.part
+*.download
+*.crdownload
 
-# IDE
+# Thumbnails
+*.thm
+*.thumb
+Thumbs.db
+thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ==================== IDE & Editor ====================
+# VS Code
 .vscode/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+*.code-workspace
+
+# PyCharm / IntelliJ
 .idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+out/
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
 *.swp
 *.swo
 *~
+*.un~
+.*.swp
+.vim/
+.vi
 
-# OS
-.DS_Store
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Atom
+.atom/
+.config/
+.tern-project
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+*.ipynb_checkpoints
+
+# ==================== Operating System ====================
+# Windows
 Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.dll
+*.exe
+*.msi
+*.sys
+*.com
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.lnk
+*.bat
+*.cmd
+*.ps1
+*.psm1
+*.psd1
+*.ps1xml
+*.pssc
+*.psrc
+*.cdxml
+*.ps1proj
 
-# Logs
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+*.dmg
+*.sparseimage
+*.sparsebundle
+
+# Linux
+*~
+.directory
+*.pid
+*.lock
+*.socket
+*.sock
+*.so
+*.a
+*.la
+*.o
+*.lai
+*.lo
+*.lst
+*.gdb_history
+
+# Android/Termux
+/storage/emulated/
+/sdcard/
+/data/data/com.termux/
+termux-storage/
+*.apk
+*.dex
+*.odex
+*.vdex
+
+# ==================== Secrets & Config ====================
+# Sensitive data
+*.cookies
+*.cookiejar
+*.session
+*.token
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Config files
+config.local.json
+config.local.yaml
+config.local.yml
+.secrets
+.secret
+.env.local
+.env.*.local
+*.local.json
+*.local.yaml
+*.local.yml
+
+# API keys
+.credentials
+credentials.json
+client_secrets.json
+service_account.json
+*.secret
+*.api_key
+
+# SSH
+.ssh/
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pem
+*.ppk
+
+# ==================== Logs & Databases ====================
 *.log
 *.err
+*.out
+*.sql
+*.sqlite
+*.db
+*.db-journal
+*.sqlite3
+*.log.[0-9]*
+*.log.gz
+error.log
+debug.log
+access.log
+app.log
 
-# Config
-config.local.json
-*.cookies
+# ==================== Docker ====================
+.docker/
+docker-compose.override.yml
+docker-compose.prod.override.yml
+*.tar
+*.tar.gz
+*.tgz
+docker-build/
+Dockerfile.tmp
+*.dockerignore
+.dockerignore
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Distribution
+# ==================== Build & Distribution ====================
+# Python build
 build/
 dist/
 *.egg-info/
+*.egg
+*.whl
+*.tar.gz
+*.zip
+
+# Package manager
+pip-log.txt
+pip-delete-this-directory.txt
+.pip/
+.pip-cache/
+__pycache__/
+*.pyc
+
+# Setuptools
+*.egg-info/
+*.egg
+MANIFEST
+.settings/
+.venv/
+venv/
+
+# ==================== Testing ====================
+.pytest_cache/
+.coverage
+.coverage.*
+.coverage.*
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+.benchmarks/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# ==================== Documentation ====================
+docs/_build/
+docs/api/
+site/
+_site/
+.docusaurus/
+.vuepress/dist/
+.jekyll-cache/
+.jekyll-metadata
+
+# ==================== Git ====================
+*.orig
+*.rej
+*.patch
+*.diff
+*.merge
+*.mergetmp
+*.mergebak
+.git/config.local
+.git/logs/
+.git/refs/remotes/
+.git/refs/tags/*_*
+
+# ==================== Project Specific ====================
+# GLOOM-OX specific
+history.json
+.gloom_ox_history.json
+.download_cache/
+*.fixed.mp4
+*_optimized.mp4
+*_opt.mp4
+*_gallery.mp4
+*_android.mp4
+
+# Temp directories
+temp/
+tmp/
+cache/
+.cache/
+
+# User data
+.user_data/
+user_config.json
+user_settings.json
+
+# ==================== Archive & Backup ====================
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.sav
+*.tmp_bak
+*~
+
+# ==================== CI/CD ====================
+.github/dependabot.yml
+.github/workflows/*.yml.bak
+.jenkins/
+.travis.yml
+.gitlab-ci.yml
+circle.yml
+azure-pipelines.yml
+bitbucket-pipelines.yml
+drone.yml
+.gitlab/
+.teamcity/
+
+# ==================== Development ====================
+.vagrant/
+*.vagrant
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfvars
+.terragrunt-cache/
+
+# Kubernetes
+*.kubeconfig
+*.kubeconfig.*
+kubeconfig
+*.secret.yaml
+*.secret.yml
+
+# ==================== Node.js (if any) ====================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# ==================== Final catch-all ====================
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+*.lock
+*.pid
+*.seed
+*.log
+*.tmp
+*.temp
+*.cache
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+*.localized
