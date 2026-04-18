@@ -1,0 +1,33 @@
+# Lightweight Alpine-based image
+FROM python:3.11-alpine
+
+LABEL maintainer="xspeen"
+LABEL version="5.1.0"
+LABEL description="GLOOM-OX - Lightweight Alpine Edition"
+
+# Install system dependencies
+RUN apk add --no-cache \
+    ffmpeg \
+    nodejs \
+    npm \
+    wget \
+    curl \
+    git \
+    ca-certificates \
+    && rm -rf /var/cache/apk/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    yt-dlp \
+    requests
+
+WORKDIR /app
+
+COPY gloom-ox.py /app/gloom-ox.py
+
+RUN chmod +x /app/gloom-ox.py
+
+VOLUME ["/app/downloads"]
+
+ENTRYPOINT ["python", "/app/gloom-ox.py"]
