@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  gloom-ox:
+    build: .
+    container_name: gloom-ox
+    stdin_open: true  # Keep STDIN open for interactive input
+    tty: true         # Allocate pseudo-TTY
+    volumes:
+      # Mount downloads folder to host
+      - ./downloads:/app/downloads
+      # Mount history file for persistence
+      - ./history:/root
+    environment:
+      - TERM=xterm-256color
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # For GUI apps on Linux (if needed)
+    network_mode: host
