@@ -1,0 +1,62 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  nightly-test:
+    name: Nightly Test Suite
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install yt-dlp --upgrade  # Force latest version
+    
+    - name: Test with latest yt-dlp
+      run: |
+        python -c "import yt_dlp; print('Testing with yt-dlp version:', yt_dlp.version.__version__)"
+        python -m py_compile gloom-ox.py
+    
+    - name: Test popular URLs
+      run: |
+        python -c "
+import subprocess
+import sys
+test_urls = [
+    'https://youtube.com/watch?v=dQw4w9WgXcQ',
+    'https://instagram.com/p/CAAAAAAAAAAA/',
+]
+for url in test_urls:
+    print(f'Testing {url}')
+    # Just test extraction, not full download
+    result = subprocess.run([sys.executable, '-c', f'import yt_dlp; yt_dlp.YoutubeDL().extract_info(\"{url}\", download=False)'], capture_output=True)
+    print(f'Result: {result.returncode}')
+"
+      continue-on-error: true
+    
+    - name: Create nightly report
+      if: always()
+      run: |
+        echo "# Nightly Build Report - $(date)" > nightly-report.md
+        echo "## Status: ${{ job.status }}" >> nightly-report.md
+        echo "## Python Version: 3.12" >> nightly-report.md
+        echo "## yt-dlp Version: $(pip show yt-dlp | grep Version)" >> nightly-report.md
+    
+    - name: Upload nightly report
+      uses: actions/upload-artifact@v4
+      with:
+        name: nightly-report
+        path: nightly-report.md
+        retention-days: 30
